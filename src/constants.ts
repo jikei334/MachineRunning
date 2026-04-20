@@ -9,9 +9,18 @@ export const SCENE_KEYS = {
 export const ASSET_KEYS = {
   BackGround: 'BackGround',
   Ground: 'Ground',
+  PLAYER: 'Player',
 } as const;
 
 export const GROUND_SCALE = 0.5;
 export const GROUND_HEIGHT = 128 * GROUND_SCALE;
 export const GROUND_WIDTH = 256 * GROUND_SCALE;
 export const GROUND_Y = GAME_HEIGHT - GROUND_HEIGHT / 2;
+
+export const PLAYER_SCALE = 0.3;
+export const PLAYER_FRAME_WIDTH = 256;
+export const PLAYER_FRAME_HEIGHT = 256;
+export const PLAYER_FRAME_COUNT = 4;
+export const PLAYER_ANIM_FRAME_RATE = 8;
+
+export const GRAVITY = 500;
