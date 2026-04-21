@@ -4,6 +4,7 @@ export const GAME_HEIGHT = 600;
 export const SCENE_KEYS = {
   TITLE: 'Title',
   GAME: 'Game',
+  GAMEOVER: 'GameOver',
 } as const;
 
 export const ASSET_KEYS = {

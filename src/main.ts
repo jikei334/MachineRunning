@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Title } from './scenes/Title';
 import { Game } from './scenes/Game';
+import { GameOver } from './scenes/GameOver';
 import { GAME_WIDTH, GAME_HEIGHT } from './constants';
 
 const config: Phaser.Types.Core.GameConfig = {
@@ -13,7 +14,7 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: true,
     },
   },
-  scene: [Title, Game],
+  scene: [Title, Game, GameOver],
 };
 
 new Phaser.Game(config);

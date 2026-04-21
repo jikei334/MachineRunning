@@ -59,6 +59,10 @@ export class Game extends Phaser.Scene {
     this.player.update();
     this.scrollX += SCROLL_SPEED;
 
+    if (this.player.y > GAME_HEIGHT) {
+      this.scene.start(SCENE_KEYS.GAMEOVER);
+    }
+
     this.grounds.getChildren().forEach((ground) => {
       const tile = ground as Phaser.Physics.Arcade.Sprite;
       tile.x = Math.round(tile.getData('initialX') - this.scrollX);
