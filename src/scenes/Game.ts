@@ -56,6 +56,7 @@ export class Game extends Phaser.Scene {
   }
 
   update(): void {
+    this.player.update();
     this.scrollX += SCROLL_SPEED;
 
     this.grounds.getChildren().forEach((ground) => {

@@ -22,5 +22,7 @@ export const PLAYER_FRAME_WIDTH = 256;
 export const PLAYER_FRAME_HEIGHT = 256;
 export const PLAYER_FRAME_COUNT = 4;
 export const PLAYER_ANIM_FRAME_RATE = 8;
+export const PLAYER_JUMP_FORCE = 900;
+export const PLAYER_JUMP_FRAMES = [0, 0, 1, 2];
 
-export const GRAVITY = 500;
+export const GRAVITY = 1500;
