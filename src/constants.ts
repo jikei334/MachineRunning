@@ -26,4 +26,12 @@ export const PLAYER_ANIM_FRAME_RATE = 8;
 export const PLAYER_JUMP_FORCE = 900;
 export const PLAYER_JUMP_FRAMES = [0, 0, 1, 2];
 
+export const PLATFORM_SCALE = 0.5;
+export const PLATFORM_MIN_TILES = 2;
+export const PLATFORM_MAX_TILES = 2;
+export const PLATFORM_MIN_Y = 200;
+export const PLATFORM_MAX_Y = 350;
+export const PLATFORM_SPAWN_INTERVAL_MIN = 2 * PLAYER_SCALE * PLAYER_FRAME_WIDTH;
+export const PLATFORM_SPAWN_INTERVAL_MAX = GAME_WIDTH;
+
 export const GRAVITY = 1500;

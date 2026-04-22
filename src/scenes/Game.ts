@@ -8,6 +8,13 @@ import {
   GROUND_WIDTH,
   GROUND_SCALE,
   GROUND_Y,
+  PLATFORM_MAX_Y,
+  PLATFORM_MIN_Y,
+  PLATFORM_SCALE,
+  PLATFORM_MAX_TILES,
+  PLATFORM_MIN_TILES,
+  PLATFORM_SPAWN_INTERVAL_MAX,
+  PLATFORM_SPAWN_INTERVAL_MIN,
   PLAYER_SCALE,
   PLAYER_FRAME_WIDTH,
   PLAYER_FRAME_HEIGHT,
@@ -26,6 +33,8 @@ export class Game extends Phaser.Scene {
   private scrollX: number = 0;
   private lastWasHole: boolean = false;
   private player!: Player;
+  private platforms!: Phaser.Physics.Arcade.StaticGroup;
+  private nextPlatformX!: number;
 
   constructor() {
     super({ key: SCENE_KEYS.GAME });
@@ -53,6 +62,24 @@ export class Game extends Phaser.Scene {
 
     this.player = new Player(this, PLAYER_X, PLAYER_Y);
     this.physics.add.collider(this.player, this.grounds);
+
+    this.platforms = this.physics.add.staticGroup();
+    this.nextPlatformX = GAME_WIDTH + 200;
+
+    this.physics.add.collider(
+      this.player,
+      this.platforms,
+      undefined,
+      (player, platform) => {
+        const playerBody = (player as Player).body as Phaser.Physics.Arcade.Body;
+        const platformSprite = (platform as Phaser.Physics.Arcade.Sprite).body as Phaser.Physics.Arcade.StaticBody;
+        return (
+          playerBody.velocity.y >= 0 &&
+            playerBody.bottom <= platformSprite.top + 10
+        );
+      },
+      this
+    );
   }
 
   update(): void {
@@ -63,6 +90,24 @@ export class Game extends Phaser.Scene {
       this.scene.start(SCENE_KEYS.GAMEOVER);
     }
 
+    this.updateGround();
+    this.updatePlatforms();
+  }
+
+  private spawnGround(x: number, withHole: boolean = true): void {
+    if (withHole && !this.lastWasHole && Math.random() < GROUND_HOLE_CHANCE) {
+      this.lastWasHole = true;
+      return;
+    }
+
+    this.lastWasHole = false;
+    const tile = this.grounds.create(x, GROUND_Y, ASSET_KEYS.Ground) as Phaser.Physics.Arcade.Sprite;
+    tile.setScale(GROUND_SCALE);
+    tile.setData('initialX', x);
+    tile.refreshBody();
+  }
+
+  private updateGround(): void {
     this.grounds.getChildren().forEach((ground) => {
       const tile = ground as Phaser.Physics.Arcade.Sprite;
       tile.x = Math.round(tile.getData('initialX') - this.scrollX);
@@ -79,16 +124,36 @@ export class Game extends Phaser.Scene {
     }
   }
 
-  private spawnGround(x: number, withHole: boolean = true): void {
-    if (withHole && !this.lastWasHole && Math.random() < GROUND_HOLE_CHANCE) {
-      this.lastWasHole = true;
-      return;
-    }
+  private updatePlatforms(): void {
+    this.platforms.getChildren().forEach((platform) => {
+      const tile = platform as Phaser.Physics.Arcade.Sprite;
+      tile.x = Math.round(tile.getData('initialX') - this.scrollX);
+      tile.refreshBody();
 
-    this.lastWasHole = false;
-    const tile = this.grounds.create(x, GROUND_Y, ASSET_KEYS.Ground) as Phaser.Physics.Arcade.Sprite;
-    tile.setScale(GROUND_SCALE);
-    tile.setData('initialX', x);
-    tile.refreshBody();
+      if (tile.x < -GROUND_WIDTH) {
+        tile.destroy();
+      }
+    });
+
+    if (this.nextPlatformX - this.scrollX < GAME_WIDTH + 200) {
+      this.spawnPlatform(this.nextPlatformX);
+      this.nextPlatformX += Phaser.Math.Between(PLATFORM_SPAWN_INTERVAL_MIN, PLATFORM_SPAWN_INTERVAL_MAX);
+    }
+  }
+
+  private spawnPlatform(startX: number): void {
+    const tileCount = Phaser.Math.Between(PLATFORM_MIN_TILES, PLATFORM_MAX_TILES);
+    const y = Phaser.Math.Between(PLATFORM_MIN_Y, PLATFORM_MAX_Y);
+    const tileWidth = GROUND_WIDTH * PLATFORM_SCALE;
+
+    for (let i = 0; i < tileCount; i++) {
+      const x = startX + i * tileWidth;
+      const tile = this.platforms.create(
+        x, y, ASSET_KEYS.Ground
+      ) as Phaser.Physics.Arcade.Sprite;
+      tile.setScale(PLATFORM_SCALE);
+      tile.setData('initialX', x);
+      tile.refreshBody();
+    }
   }
 }
