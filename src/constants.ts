@@ -11,6 +11,7 @@ export const ASSET_KEYS = {
   BackGround: 'BackGround',
   Ground: 'Ground',
   PLAYER: 'Player',
+  SHARK: 'shark',
 } as const;
 
 export const GROUND_SCALE = 0.5;
@@ -33,5 +34,15 @@ export const PLATFORM_MIN_Y = 200;
 export const PLATFORM_MAX_Y = 350;
 export const PLATFORM_SPAWN_INTERVAL_MIN = 2 * PLAYER_SCALE * PLAYER_FRAME_WIDTH;
 export const PLATFORM_SPAWN_INTERVAL_MAX = GAME_WIDTH;
+
+export const SHARK_SCALE = 0.5;
+export const SHARK_FRAME_WIDTH = 256;
+export const SHAKR_FRAME_HEIGHT = 128;
+export const SHARK_FRAME_COUNT = 2;
+export const SHARK_ANIM_FRAME_RATE = 8;
+export const SHARK_SPEED = 300;
+export const SHARK_SPAWN_INTERVAL = 10000;
+export const SHARK_MIN_Y = 100;
+export const SHARK_MAX_Y = 400;
 
 export const GRAVITY = 1500;

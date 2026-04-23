@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { Player } from '../objects/Player';
+import { Shark } from '../objects/Shark';
 import {
   ASSET_KEYS,
   GAME_WIDTH,
@@ -19,6 +20,11 @@ import {
   PLAYER_FRAME_WIDTH,
   PLAYER_FRAME_HEIGHT,
   SCENE_KEYS,
+  SHARK_SPAWN_INTERVAL,
+  SHARK_MIN_Y,
+  SHARK_MAX_Y,
+  SHARK_FRAME_WIDTH,
+  SHAKR_FRAME_HEIGHT,
 } from '../constants';
 
 const SCROLL_SPEED = 3;
@@ -33,6 +39,7 @@ export class Game extends Phaser.Scene {
   private scrollX: number = 0;
   private lastWasHole: boolean = false;
   private player!: Player;
+  private sharks!: Phaser.Physics.Arcade.Group;
   private platforms!: Phaser.Physics.Arcade.StaticGroup;
   private nextPlatformX!: number;
 
@@ -46,6 +53,10 @@ export class Game extends Phaser.Scene {
     this.load.spritesheet(ASSET_KEYS.PLAYER, 'assets/renji_animation.png', {
       frameWidth: PLAYER_FRAME_WIDTH,
       frameHeight: PLAYER_FRAME_HEIGHT,
+    });
+    this.load.spritesheet(ASSET_KEYS.SHARK, 'assets/shark_animation.png', {
+      frameWidth: SHARK_FRAME_WIDTH,
+      frameHeight: SHAKR_FRAME_HEIGHT,
     });
   }
 
@@ -80,9 +91,28 @@ export class Game extends Phaser.Scene {
       },
       this
     );
+
+    this.sharks = this.physics.add.group();
+
+    this.time.addEvent({
+      delay: SHARK_SPAWN_INTERVAL,
+      callback: this.spawnShark,
+      callbackScope: this,
+      loop: true,
+    });
+
+    this.physics.add.overlap(
+      this.player,
+      this.sharks,
+      () => {
+        this.scene.start(SCENE_KEYS.GAMEOVER);
+      },
+      undefined,
+      this
+    );
   }
 
-  update(): void {
+  update(time: number, delta: number): void {
     this.player.update();
     this.scrollX += SCROLL_SPEED;
 
@@ -92,6 +122,14 @@ export class Game extends Phaser.Scene {
 
     this.updateGround();
     this.updatePlatforms();
+
+    this.sharks.getChildren().forEach((shark) => {
+      const s = shark as Shark;
+      s.update(time, delta);
+      if (s.x < -100) {
+        s.destroy();
+      }
+    });
   }
 
   private spawnGround(x: number, withHole: boolean = true): void {
@@ -155,5 +193,11 @@ export class Game extends Phaser.Scene {
       tile.setData('initialX', x);
       tile.refreshBody();
     }
+  }
+
+  private spawnShark(): void {
+    const y = Phaser.Math.Between(SHARK_MIN_Y, SHARK_MAX_Y);
+    const shark = new Shark(this, GAME_WIDTH + 100, y);
+    this.sharks.add(shark);
   }
 }
