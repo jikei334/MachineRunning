@@ -5,6 +5,7 @@ import { Chainsaw } from '../objects/Chainsaw';
 import { CooltimeGauge } from '../ui/CooltimeGauge';
 import {
   ASSET_KEYS,
+  CHAINSAW_COOLTIME,
   GAME_WIDTH,
   GAME_HEIGHT,
   GROUND_HEIGHT,
@@ -18,9 +19,7 @@ import {
   PLATFORM_MIN_TILES,
   PLATFORM_SPAWN_INTERVAL_MAX,
   PLATFORM_SPAWN_INTERVAL_MIN,
-  PLAYER_SCALE,
-  PLAYER_FRAME_WIDTH,
-  PLAYER_FRAME_HEIGHT,
+  PLAYER,
   SCENE_KEYS,
   SHARK_SPAWN_INTERVAL,
   SHARK_MIN_Y,
@@ -32,20 +31,21 @@ import {
 const SCROLL_SPEED = 3;
 const GROUND_HOLE_CHANCE = 0.2;
 const GROUND_TILE_COUNT = Math.ceil(GAME_WIDTH / GROUND_WIDTH) + 2;
-const PLAYER_X = GAME_WIDTH / 4;
 const PLAYER_Y = -100;
 
 export class Game extends Phaser.Scene {
+  private players: Player[] = [];
   private grounds!: Phaser.Physics.Arcade.StaticGroup;
   private nextGroundX!: number;
   private scrollX: number = 0;
   private lastWasHole: boolean = false;
-  private player!: Player;
   private sharks!: Phaser.Physics.Arcade.Group;
   private chainsaws!: Phaser.Physics.Arcade.Group;
   private platforms!: Phaser.Physics.Arcade.StaticGroup;
   private cooltimeGauge!: CooltimeGauge;
   private nextPlatformX!: number;
+  private fireKey!: Phaser.Input.Keyboard.Key;
+  private lastFiredTime: number = 0;
 
   constructor() {
     super({ key: SCENE_KEYS.GAME });
@@ -55,8 +55,8 @@ export class Game extends Phaser.Scene {
     this.load.image(ASSET_KEYS.BackGround, './assets/Background.png');
     this.load.image(ASSET_KEYS.Ground, 'assets/Ground.png');
     this.load.spritesheet(ASSET_KEYS.PLAYER, 'assets/renji_animation.png', {
-      frameWidth: PLAYER_FRAME_WIDTH,
-      frameHeight: PLAYER_FRAME_HEIGHT,
+      frameWidth: PLAYER.FRAME.WIDTH,
+      frameHeight: PLAYER.FRAME.HEIGHT,
     });
     this.load.spritesheet(ASSET_KEYS.SHARK, 'assets/shark_animation.png', {
       frameWidth: SHARK_FRAME_WIDTH,
@@ -69,34 +69,13 @@ export class Game extends Phaser.Scene {
     this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, ASSET_KEYS.BackGround);
 
     this.grounds = this.physics.add.staticGroup();
-
     for (let i = 0; i < GROUND_TILE_COUNT; i++) {
       this.spawnGround(i * GROUND_WIDTH + GROUND_WIDTH / 2, false);
     }
-
     this.nextGroundX = GROUND_TILE_COUNT * GROUND_WIDTH;
-
-    this.player = new Player(this, PLAYER_X, PLAYER_Y);
-    this.physics.add.collider(this.player, this.grounds);
 
     this.platforms = this.physics.add.staticGroup();
     this.nextPlatformX = GAME_WIDTH + 200;
-
-    this.physics.add.collider(
-      this.player,
-      this.platforms,
-      undefined,
-      (player, platform) => {
-        const playerBody = (player as Player).body as Phaser.Physics.Arcade.Body;
-        const platformSprite = (platform as Phaser.Physics.Arcade.Sprite).body as Phaser.Physics.Arcade.StaticBody;
-        return (
-          playerBody.velocity.y >= 0 &&
-            playerBody.bottom <= platformSprite.top + 10
-        );
-      },
-      this
-    );
-
     this.sharks = this.physics.add.group();
 
     this.time.addEvent({
@@ -106,17 +85,12 @@ export class Game extends Phaser.Scene {
       loop: true,
     });
 
-    this.physics.add.overlap(
-      this.player,
-      this.sharks,
-      () => {
-        this.scene.start(SCENE_KEYS.GAMEOVER);
-      },
-      undefined,
-      this
-    );
-
     this.chainsaws = this.physics.add.group();
+
+    this.spawnPlayer();
+    this.fireKey = this.input.keyboard!.addKey(
+      Phaser.Input.Keyboard.KeyCodes.ENTER,
+    );
 
     this.physics.add.overlap(
       this.chainsaws,
@@ -133,8 +107,20 @@ export class Game extends Phaser.Scene {
   }
 
   update(time: number, delta: number): void {
-    this.player.update();
-    this.scrollX += SCROLL_SPEED;
+    // プレイヤー更新
+    this.players.forEach((p) => p.update(time, delta));
+
+    this.players.forEach((p) => {
+      if (p.isOutOfBounds()) {
+        p.destroy();
+      }
+    });
+    this.players = this.players.filter((p) => p.active);
+    this.checkGameOver();
+
+    if (Phaser.Input.Keyboard.JustDown(this.fireKey)) {
+      this.fireChainsaw();
+    }
 
     this.chainsaws.getChildren().forEach((c) => {
       const chainsaw = c as Chainsaw;
@@ -144,14 +130,10 @@ export class Game extends Phaser.Scene {
       }
     });
 
-    const chainsaw = this.player.fireChainsaw();
-    if (chainsaw != null) {
-      this.chainsaws.add(chainsaw);
-    }
+    const elapsed = this.time.now - this.lastFiredTime;
+    this.cooltimeGauge.update(Phaser.Math.Clamp(elapsed / CHAINSAW_COOLTIME, 0, 1));
 
-    if (this.player.y > GAME_HEIGHT) {
-      this.scene.start(SCENE_KEYS.GAMEOVER);
-    }
+    this.scrollX += SCROLL_SPEED;
 
     this.updateGround();
     this.updatePlatforms();
@@ -163,8 +145,61 @@ export class Game extends Phaser.Scene {
         s.destroy();
       }
     });
+  }
 
-    this.cooltimeGauge.update(this.player.getCooldownProgress());
+  private spawnPlayer(): void {
+    const x = PLAYER.X + Phaser.Math.Between(
+      -PLAYER.SPAWN_X_MARGIN,
+      PLAYER.SPAWN_X_MARGIN
+    );
+    const player = new Player(this, x, PLAYER.START_Y);
+
+    this.physics.add.collider(player, this.grounds);
+    this.physics.add.collider(
+      player,
+      this.platforms,
+      undefined,
+      (_player, platform) => {
+        const playerBody = (_player as Player).body as Phaser.Physics.Arcade.Body;
+        const platformBody = (platform as Phaser.Physics.Arcade.Sprite).body as Phaser.Physics.Arcade.StaticBody;
+        return playerBody.velocity.y >= 0 && playerBody.bottom <= platformBody.top + 10;
+      },
+      this
+    );
+
+    this.physics.add.overlap(
+      player,
+      this.sharks,
+      (_player, shark) => {
+        (shark as Shark).destroy();
+        (_player as Player).destroy();
+        this.players = this.players.filter((p) => p.active);
+        this.checkGameOver();
+      },
+      undefined,
+      this
+    );
+
+    this.players.push(player);
+  }
+
+  private fireChainsaw(): void {
+    const now = this.time.now;
+    if (now - this.lastFiredTime < CHAINSAW_COOLTIME) return;
+    if (this.players.length === 0) return;
+
+    this.lastFiredTime = now;
+
+    this.players.forEach((player) => {
+      const chainsaw = new Chainsaw(this, player.x, player.y);
+      this.chainsaws.add(chainsaw);
+    });
+  }
+
+  private checkGameOver(): void {
+    if (this.players.length === 0) {
+      this.scene.start(SCENE_KEYS.GAMEOVER);
+    }
   }
 
   private spawnGround(x: number, withHole: boolean = true): void {
