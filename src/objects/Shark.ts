@@ -1,10 +1,7 @@
 import Phaser from 'phaser';
 import {
   ASSET_KEYS,
-  SHARK_SCALE,
-  SHARK_FRAME_COUNT,
-  SHARK_ANIM_FRAME_RATE,
-  SHARK_SPEED,
+  SHARK,
 } from '../constants';
 
 const ANIM_KEYS = {
@@ -12,13 +9,15 @@ const ANIM_KEYS = {
 } as const;
 
 export class Shark extends Phaser.Physics.Arcade.Sprite {
-  constructor(scene: Phaser.Scene, x: number, y: number) {
+  private speed: number;
+
+  constructor(scene: Phaser.Scene, x: number, y: number, scrollSpeed: number) {
     super(scene, x, y, ASSET_KEYS.SHARK);
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
-    this.setScale(SHARK_SCALE);
+    this.setScale(SHARK.SCALE);
     this.setGravityY(-scene.physics.world.gravity.y);
 
     if (!scene.anims.exists(ANIM_KEYS.FLY)) {
@@ -26,17 +25,19 @@ export class Shark extends Phaser.Physics.Arcade.Sprite {
         key: ANIM_KEYS.FLY,
         frames: scene.anims.generateFrameNumbers(ASSET_KEYS.SHARK, {
           start: 0,
-          end: SHARK_FRAME_COUNT - 1,
+          end: SHARK.FRAME.COUNT - 1,
         }),
-        frameRate: SHARK_ANIM_FRAME_RATE,
+        frameRate: SHARK.ANIM_FRAME_RATE,
         repeat: -1,
       });
     }
+
+    this.speed = SHARK.SPEED + scrollSpeed * 60;
 
     this.anims.play(ANIM_KEYS.FLY);
   }
 
   update(_time: number, delta: number): void {
-    this.x -= SHARK_SPEED * (delta / 1000);
+    this.x -= this.speed * (delta / 1000);
   }
 }

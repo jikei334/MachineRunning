@@ -21,14 +21,11 @@ import {
   PLATFORM_SPAWN_INTERVAL_MIN,
   PLAYER,
   SCENE_KEYS,
-  SHARK_SPAWN_INTERVAL,
-  SHARK_MIN_Y,
-  SHARK_MAX_Y,
-  SHARK_FRAME_WIDTH,
-  SHAKR_FRAME_HEIGHT,
+  SCROLL,
+  SHARK,
 } from '../constants';
 
-const SCROLL_SPEED = 3;
+// const SCROLL_SPEED = 3;
 const GROUND_HOLE_CHANCE = 0.2;
 const GROUND_TILE_COUNT = Math.ceil(GAME_WIDTH / GROUND_WIDTH) + 2;
 
@@ -46,6 +43,7 @@ export class Game extends Phaser.Scene {
   private jumpKey!: Phaser.Input.Keyboard.Key;
   private fireKey!: Phaser.Input.Keyboard.Key;
   private lastFiredTime: number = 0;
+  private scrollSpeed: number = SCROLL.INITIAL_SPEED;
 
   constructor() {
     super({ key: SCENE_KEYS.GAME });
@@ -59,8 +57,8 @@ export class Game extends Phaser.Scene {
       frameHeight: PLAYER.FRAME.HEIGHT,
     });
     this.load.spritesheet(ASSET_KEYS.SHARK, 'assets/shark_animation.png', {
-      frameWidth: SHARK_FRAME_WIDTH,
-      frameHeight: SHAKR_FRAME_HEIGHT,
+      frameWidth: SHARK.FRAME.WIDTH,
+      frameHeight: SHARK.FRAME.HEIGHT,
     });
     this.load.image(ASSET_KEYS.CHAINSAW, 'assets/chainsaw.png');
   }
@@ -85,7 +83,7 @@ export class Game extends Phaser.Scene {
     this.sharks = this.physics.add.group();
 
     this.time.addEvent({
-      delay: SHARK_SPAWN_INTERVAL,
+      delay: SHARK.SPAWN_INTERVAL,
       callback: this.spawnShark,
       callbackScope: this,
       loop: true,
@@ -115,6 +113,7 @@ export class Game extends Phaser.Scene {
     );
 
     this.cooltimeGauge = new CooltimeGauge(this);
+    this.scrollSpeed = SCROLL.INITIAL_SPEED;
   }
 
   update(time: number, delta: number): void {
@@ -145,7 +144,11 @@ export class Game extends Phaser.Scene {
     const elapsed = this.time.now - this.lastFiredTime;
     this.cooltimeGauge.update(Phaser.Math.Clamp(elapsed / CHAINSAW.COOLTIME, 0, 1));
 
-    this.scrollX += SCROLL_SPEED;
+    this.scrollSpeed = Math.min(
+      SCROLL.MAX_SPEED,
+      this.scrollSpeed + SCROLL.ACCELERATION * delta
+    );
+    this.scrollX += this.scrollSpeed;
 
     this.updateGround();
     this.updatePlatforms();
@@ -291,8 +294,8 @@ export class Game extends Phaser.Scene {
   }
 
   private spawnShark(): void {
-    const y = Phaser.Math.Between(SHARK_MIN_Y, SHARK_MAX_Y);
-    const shark = new Shark(this, GAME_WIDTH + 100, y);
+    const y = Phaser.Math.Between(SHARK.MIN_Y, SHARK.MAX_Y);
+    const shark = new Shark(this, GAME_WIDTH + 100, y, this.scrollSpeed);
     this.sharks.add(shark);
   }
 }

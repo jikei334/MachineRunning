@@ -1,6 +1,12 @@
 export const GAME_WIDTH = 800;
 export const GAME_HEIGHT = 600;
 
+export const SCROLL = {
+  INITIAL_SPEED: 3,
+  MAX_SPEED: 12,
+  ACCELERATION: 0.0001,
+} as const;
+
 export const SCENE_KEYS = {
   TITLE: 'Title',
   GAME: 'Game',
@@ -45,15 +51,19 @@ export const PLATFORM_MAX_Y = 350;
 export const PLATFORM_SPAWN_INTERVAL_MIN = 2 * PLAYER.SCALE * PLAYER.FRAME.WIDTH;
 export const PLATFORM_SPAWN_INTERVAL_MAX = GAME_WIDTH;
 
-export const SHARK_SCALE = 0.5;
-export const SHARK_FRAME_WIDTH = 256;
-export const SHAKR_FRAME_HEIGHT = 128;
-export const SHARK_FRAME_COUNT = 2;
-export const SHARK_ANIM_FRAME_RATE = 8;
-export const SHARK_SPEED = 300;
-export const SHARK_SPAWN_INTERVAL = 10000;
-export const SHARK_MIN_Y = 100;
-export const SHARK_MAX_Y = 400;
+export const SHARK = {
+  SCALE: 0.5,
+  FRAME: {
+    WIDTH: 256,
+    HEIGHT: 128,
+    COUNT: 2,
+  },
+  ANIM_FRAME_RATE: 8,
+  SPEED: 300,
+  SPAWN_INTERVAL: 10000,
+  MIN_Y: 100,
+  MAX_Y: 400,
+};
 
 export const CHAINSAW = {
   SPEED: 600,
