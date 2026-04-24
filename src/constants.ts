@@ -12,6 +12,7 @@ export const ASSET_KEYS = {
   Ground: 'Ground',
   PLAYER: 'Player',
   SHARK: 'shark',
+  CHAINSAW: 'chainsaw',
 } as const;
 
 export const GROUND_SCALE = 0.5;
@@ -44,5 +45,11 @@ export const SHARK_SPEED = 300;
 export const SHARK_SPAWN_INTERVAL = 10000;
 export const SHARK_MIN_Y = 100;
 export const SHARK_MAX_Y = 400;
+
+export const CHAINSAW_SPEED = 600;
+export const CHAINSAW_WIDTH = 128;
+export const CHAINSAW_HEIGHT = 64;
+export const CHAINSAW_SCALE = 0.5;
+export const CHAINSAW_COOLTIME = 1000;
 
 export const GRAVITY = 1500;

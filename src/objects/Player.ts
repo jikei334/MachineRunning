@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
+import { Chainsaw } from './Chainsaw';
 import {
   ASSET_KEYS,
+  CHAINSAW_COOLTIME,
   GRAVITY,
   PLAYER_SCALE,
   PLAYER_FRAME_WIDTH,
@@ -18,7 +20,9 @@ const ANIM_KEYS = {
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   private jumpKey!: Phaser.Input.Keyboard.Key;
+  private fireKey!: Phaser.Input.Keyboard.Key;
   private isJumping: boolean = false;
+  private lastFiredTime: number = 0;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, ASSET_KEYS.PLAYER);
@@ -51,6 +55,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     });
 
     this.anims.play(ANIM_KEYS.RUN);
+
+    this.fireKey = scene.input.keyboard!.addKey(
+      Phaser.Input.Keyboard.KeyCodes.ENTER
+    );
   }
 
   update(): void {
@@ -67,5 +75,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.anims.play(ANIM_KEYS.RUN);
       this.isJumping = false;
     }
+  }
+
+  fireChainsaw(): Chainsaw | null {
+    if (!Phaser.Input.Keyboard.JustDown(this.fireKey)) return null;
+
+    const now = this.scene.time.now;
+    if (now - this.lastFiredTime < CHAINSAW_COOLTIME) return null;
+
+    this.lastFiredTime = now;
+    return new Chainsaw(this.scene, this.x, this.y);
   }
 }

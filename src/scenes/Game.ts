@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Player } from '../objects/Player';
 import { Shark } from '../objects/Shark';
+import { Chainsaw } from '../objects/Chainsaw';
 import {
   ASSET_KEYS,
   GAME_WIDTH,
@@ -40,6 +41,7 @@ export class Game extends Phaser.Scene {
   private lastWasHole: boolean = false;
   private player!: Player;
   private sharks!: Phaser.Physics.Arcade.Group;
+  private chainsaws!: Phaser.Physics.Arcade.Group;
   private platforms!: Phaser.Physics.Arcade.StaticGroup;
   private nextPlatformX!: number;
 
@@ -58,6 +60,7 @@ export class Game extends Phaser.Scene {
       frameWidth: SHARK_FRAME_WIDTH,
       frameHeight: SHAKR_FRAME_HEIGHT,
     });
+    this.load.image(ASSET_KEYS.CHAINSAW, 'assets/chainsaw.png');
   }
 
   create(): void {
@@ -110,11 +113,37 @@ export class Game extends Phaser.Scene {
       undefined,
       this
     );
+
+    this.chainsaws = this.physics.add.group();
+
+    this.physics.add.overlap(
+      this.chainsaws,
+      this.sharks,
+      (chainsaw, shark) => {
+        (chainsaw as Chainsaw).destroy();
+        (shark as Shark).destroy();
+      },
+      undefined,
+      this
+    );
   }
 
   update(time: number, delta: number): void {
     this.player.update();
     this.scrollX += SCROLL_SPEED;
+
+    this.chainsaws.getChildren().forEach((c) => {
+      const chainsaw = c as Chainsaw;
+      chainsaw.update(time, delta);
+      if (chainsaw.x > GAME_WIDTH + 100) {
+        chainsaw.destroy();
+      }
+    });
+
+    const chainsaw = this.player.fireChainsaw();
+    if (chainsaw != null) {
+      this.chainsaws.add(chainsaw);
+    }
 
     if (this.player.y > GAME_HEIGHT) {
       this.scene.start(SCENE_KEYS.GAMEOVER);
