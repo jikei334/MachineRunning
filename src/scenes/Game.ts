@@ -66,6 +66,12 @@ export class Game extends Phaser.Scene {
   }
 
   create(): void {
+    this.scrollX = 0;
+    this.lastWasHole = false;
+    this.lastFiredTime = 0;
+    this.players = [];
+    this.nextPlatformX = GAME_WIDTH + 200;
+
     this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, ASSET_KEYS.BackGround);
 
     this.grounds = this.physics.add.staticGroup();
