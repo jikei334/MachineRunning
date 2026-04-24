@@ -86,4 +86,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.lastFiredTime = now;
     return new Chainsaw(this.scene, this.x, this.y);
   }
+
+  getCooldownProgress(): number {
+    const elapsed = this.scene.time.now - this.lastFiredTime;
+    return Phaser.Math.Clamp(elapsed / CHAINSAW_COOLTIME, 0, 1);
+  }
 }

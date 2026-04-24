@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { Player } from '../objects/Player';
 import { Shark } from '../objects/Shark';
 import { Chainsaw } from '../objects/Chainsaw';
+import { CooltimeGauge } from '../ui/CooltimeGauge';
 import {
   ASSET_KEYS,
   GAME_WIDTH,
@@ -43,6 +44,7 @@ export class Game extends Phaser.Scene {
   private sharks!: Phaser.Physics.Arcade.Group;
   private chainsaws!: Phaser.Physics.Arcade.Group;
   private platforms!: Phaser.Physics.Arcade.StaticGroup;
+  private cooltimeGauge!: CooltimeGauge;
   private nextPlatformX!: number;
 
   constructor() {
@@ -126,6 +128,8 @@ export class Game extends Phaser.Scene {
       undefined,
       this
     );
+
+    this.cooltimeGauge = new CooltimeGauge(this);
   }
 
   update(time: number, delta: number): void {
@@ -159,6 +163,8 @@ export class Game extends Phaser.Scene {
         s.destroy();
       }
     });
+
+    this.cooltimeGauge.update(this.player.getCooldownProgress());
   }
 
   private spawnGround(x: number, withHole: boolean = true): void {

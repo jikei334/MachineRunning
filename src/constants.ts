@@ -52,4 +52,18 @@ export const CHAINSAW_HEIGHT = 64;
 export const CHAINSAW_SCALE = 0.5;
 export const CHAINSAW_COOLTIME = 1000;
 
+export const COOLTIME = {
+  DURATION: 1000,
+  GAUGE: {
+    X: 20,
+    Y: 20,
+    WIDTH: 150,
+    HEIGHT: 16,
+    COLOR: {
+      BG: 0x444444,
+      FILL: 0xff4444,
+    },
+  },
+} as const;
+
 export const GRAVITY = 1500;
