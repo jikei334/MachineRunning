@@ -33,8 +33,8 @@ export const PLAYER = {
     FRAMES: [0, 0, 1, 2],
   },
   START_Y: -1000,
-  X: 200,
-  SPAWN_X_MARGIN: 50,
+  X: GAME_WIDTH / 4,
+  SPAWN_X_MARGIN: 3 / 16 * GAME_WIDTH,
 } as const;
 
 export const PLATFORM_SCALE = 0.5;
@@ -55,14 +55,20 @@ export const SHARK_SPAWN_INTERVAL = 10000;
 export const SHARK_MIN_Y = 100;
 export const SHARK_MAX_Y = 400;
 
-export const CHAINSAW_SPEED = 600;
-export const CHAINSAW_WIDTH = 128;
-export const CHAINSAW_HEIGHT = 64;
-export const CHAINSAW_SCALE = 0.5;
-export const CHAINSAW_COOLTIME = 1000;
+export const CHAINSAW = {
+  SPEED: 600,
+  WIDTH: 128,
+  HEIGHT: 64,
+  SCALE: 0.5,
+  COOLTIME: 1000,
+  FIRE_POINT: {
+    X: PLAYER.FRAME.WIDTH * PLAYER.SCALE + 1,
+    Y: -1,
+  },
+} as const;
 
 export const COOLTIME = {
-  DURATION: 1000,
+  DURATION: CHAINSAW.COOLTIME,
   GAUGE: {
     X: 20,
     Y: 20,

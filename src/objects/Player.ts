@@ -12,7 +12,6 @@ const ANIM_KEYS = {
 } as const;
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
-  private jumpKey!: Phaser.Input.Keyboard.Key;
   private isJumping: boolean = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
@@ -23,10 +22,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.setScale(PLAYER.SCALE);
     this.setGravityY(GRAVITY);
-
-    this.jumpKey = scene.input.keyboard!.addKey(
-      Phaser.Input.Keyboard.KeyCodes.SPACE
-    );
 
     scene.anims.create({
       key: ANIM_KEYS.RUN,
@@ -48,11 +43,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.anims.play(ANIM_KEYS.RUN);
   }
 
-  update(_time: number, _delta: number): void {
+  update(_time: number, _delta: number, jump: boolean): void {
     const body = this.body as Phaser.Physics.Arcade.Body;
     const isOnGround = body.touching.down || body.blocked.down;
 
-    if (Phaser.Input.Keyboard.JustDown(this.jumpKey) && isOnGround) {
+    if (jump && isOnGround) {
       this.setVelocityY(-PLAYER.JUMP.FORCE);
       this.anims.play(ANIM_KEYS.JUMP);
       this.isJumping = true;

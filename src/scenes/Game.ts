@@ -5,7 +5,7 @@ import { Chainsaw } from '../objects/Chainsaw';
 import { CooltimeGauge } from '../ui/CooltimeGauge';
 import {
   ASSET_KEYS,
-  CHAINSAW_COOLTIME,
+  CHAINSAW,
   GAME_WIDTH,
   GAME_HEIGHT,
   GROUND_HEIGHT,
@@ -31,7 +31,6 @@ import {
 const SCROLL_SPEED = 3;
 const GROUND_HOLE_CHANCE = 0.2;
 const GROUND_TILE_COUNT = Math.ceil(GAME_WIDTH / GROUND_WIDTH) + 2;
-const PLAYER_Y = -100;
 
 export class Game extends Phaser.Scene {
   private players: Player[] = [];
@@ -44,6 +43,7 @@ export class Game extends Phaser.Scene {
   private platforms!: Phaser.Physics.Arcade.StaticGroup;
   private cooltimeGauge!: CooltimeGauge;
   private nextPlatformX!: number;
+  private jumpKey!: Phaser.Input.Keyboard.Key;
   private fireKey!: Phaser.Input.Keyboard.Key;
   private lastFiredTime: number = 0;
 
@@ -87,6 +87,10 @@ export class Game extends Phaser.Scene {
 
     this.chainsaws = this.physics.add.group();
 
+    this.jumpKey = this.input.keyboard!.addKey(
+      Phaser.Input.Keyboard.KeyCodes.SPACE
+    );
+
     this.spawnPlayer();
     this.fireKey = this.input.keyboard!.addKey(
       Phaser.Input.Keyboard.KeyCodes.ENTER,
@@ -98,6 +102,7 @@ export class Game extends Phaser.Scene {
       (chainsaw, shark) => {
         (chainsaw as Chainsaw).destroy();
         (shark as Shark).destroy();
+        this.spawnPlayer();
       },
       undefined,
       this
@@ -107,8 +112,9 @@ export class Game extends Phaser.Scene {
   }
 
   update(time: number, delta: number): void {
+    const jump = Phaser.Input.Keyboard.JustDown(this.jumpKey);
     // プレイヤー更新
-    this.players.forEach((p) => p.update(time, delta));
+    this.players.forEach((p) => p.update(time, delta, jump));
 
     this.players.forEach((p) => {
       if (p.isOutOfBounds()) {
@@ -131,7 +137,7 @@ export class Game extends Phaser.Scene {
     });
 
     const elapsed = this.time.now - this.lastFiredTime;
-    this.cooltimeGauge.update(Phaser.Math.Clamp(elapsed / CHAINSAW_COOLTIME, 0, 1));
+    this.cooltimeGauge.update(Phaser.Math.Clamp(elapsed / CHAINSAW.COOLTIME, 0, 1));
 
     this.scrollX += SCROLL_SPEED;
 
@@ -180,18 +186,31 @@ export class Game extends Phaser.Scene {
       this
     );
 
+    this.physics.add.overlap(
+      player,
+      this.chainsaws,
+      (_player, _chainsaw) => {
+        (_chainsaw as Chainsaw).destroy();
+        (_player as Player).destroy();
+        this.players = this.players.filter((p) => p.active);
+        this.checkGameOver();
+      },
+      undefined,
+      this
+    );
+
     this.players.push(player);
   }
 
   private fireChainsaw(): void {
     const now = this.time.now;
-    if (now - this.lastFiredTime < CHAINSAW_COOLTIME) return;
+    if (now - this.lastFiredTime < CHAINSAW.COOLTIME) return;
     if (this.players.length === 0) return;
 
     this.lastFiredTime = now;
 
     this.players.forEach((player) => {
-      const chainsaw = new Chainsaw(this, player.x, player.y);
+      const chainsaw = new Chainsaw(this, player.x + CHAINSAW.FIRE_POINT.X, player.y + CHAINSAW.FIRE_POINT.Y);
       this.chainsaws.add(chainsaw);
     });
   }

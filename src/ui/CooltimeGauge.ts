@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import {
   COOLTIME,
-  CHAINSAW_COOLTIME,
+  CHAINSAW,
 } from '../constants';
 
 export class CooltimeGauge {

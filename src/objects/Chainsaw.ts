@@ -1,8 +1,7 @@
 import Phaser from 'phaser';
 import {
   ASSET_KEYS,
-  CHAINSAW_SPEED,
-  CHAINSAW_SCALE,
+  CHAINSAW,
 } from '../constants';
 
 export class Chainsaw extends Phaser.Physics.Arcade.Sprite {
@@ -12,11 +11,11 @@ export class Chainsaw extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
-    this.setScale(CHAINSAW_SCALE);
+    this.setScale(CHAINSAW.SCALE);
     this.setGravityY(-scene.physics.world.gravity.y); // 重力無効
   }
 
   update(_timer: number, delta: number): void {
-    this.x += CHAINSAW_SPEED * (delta / 1000);
+    this.x += CHAINSAW.SPEED * (delta / 1000);
   }
 }
