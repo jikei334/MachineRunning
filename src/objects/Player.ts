@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import {
   ASSET_KEYS,
+  DEATH,
   GAME_HEIGHT,
   GRAVITY,
   PLAYER,
@@ -13,6 +14,7 @@ const ANIM_KEYS = {
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   private isJumping: boolean = false;
+  private isDying: boolean = false;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, ASSET_KEYS.PLAYER);
@@ -59,7 +61,55 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
+  getIsDying(): boolean {
+    return this.isDying;
+  }
+
   isOutOfBounds(): boolean {
-    return this.y > GAME_HEIGHT;
+    return !this.isDying && this.y > GAME_HEIGHT;
+  }
+
+  dieWithHitStop(onComplete: () => void): void {
+    if (this.isDying) return;
+    this.isDying = true;
+    this.setActive(false);
+
+    this.setVelocity(0, 0);
+    (this.body as Phaser.Physics.Arcade.Body).enable = false;
+
+    this.setTintFill(DEATH.FLASH_COLOR);
+    this.scene.tweens.add({
+      targets: this,
+      x: this.x + 5,
+      duration: 50,
+      yoyo: true,
+      repeat: 3,
+      ease: 'Linear',
+      onComplete: () => {
+        onComplete();
+        this.destroy();
+      },
+    });
+  }
+
+  dieWithFall(onComplete: () => void): void {
+    if (this.isDying) return;
+    this.isDying = true;
+    this.setActive(false);
+
+    this.setVelocityX(-50);
+    this.setVelocityY(-1600);
+
+    this.scene.tweens.add({
+      targets: this,
+      angle: 360,
+      alpha: 0,
+      duration: 800,
+      ease: 'Linear',
+      onComplete: () => {
+        onComplete();
+        this.destroy();
+      },
+    });
   }
 }

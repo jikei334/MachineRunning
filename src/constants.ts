@@ -48,6 +48,12 @@ export const PLAYER = {
   SPAWN_X_MARGIN: 3 / 16 * GAME_WIDTH,
 } as const;
 
+export const DEATH = {
+  FLASH_COLOR: 0xff0000,
+  FALL_SPIN_SPEED: 15,
+} as const;
+export const FALL_DEATH_TRIGGER_Y = GAME_HEIGHT - 50;
+
 export const PLATFORM_SCALE = 0.5;
 export const PLATFORM_MIN_TILES = 2;
 export const PLATFORM_MAX_TILES = 2;

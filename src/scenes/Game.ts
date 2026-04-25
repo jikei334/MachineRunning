@@ -132,10 +132,10 @@ export class Game extends Phaser.Scene {
 
     this.players.forEach((p) => {
       if (p.isOutOfBounds()) {
-        p.destroy();
+        p.dieWithFall(() => this.onPlayerDead());
       }
     });
-    this.players = this.players.filter((p) => p.active);
+    this.players = this.players.filter((p) => p.active || p.getIsDying());;
     this.checkGameOver();
 
     if (Phaser.Input.Keyboard.JustDown(this.fireKey)) {
@@ -170,12 +170,17 @@ export class Game extends Phaser.Scene {
       }
     });
 
-    if (time - this.lastFiredTime >= SCORE.INTERNAL) {
+    if (time - this.lastScoreTime >= SCORE.INTERNAL) {
       this.score += this.players.length * this.scrollSpeed;
       this.lastScoreTime = time;
     }
 
     this.scoreDisplay.update(this.score);
+  }
+
+  private onPlayerDead(): void {
+    this.players = this.players.filter((p) => p.active);
+    this.checkGameOver();
   }
 
   private spawnPlayer(): void {
@@ -203,9 +208,7 @@ export class Game extends Phaser.Scene {
       this.sharks,
       (_player, shark) => {
         (shark as Shark).destroy();
-        (_player as Player).destroy();
-        this.players = this.players.filter((p) => p.active);
-        this.checkGameOver();
+        (_player as Player).dieWithHitStop(() => this.onPlayerDead());
       },
       undefined,
       this
@@ -216,9 +219,7 @@ export class Game extends Phaser.Scene {
       this.chainsaws,
       (_player, _chainsaw) => {
         (_chainsaw as Chainsaw).destroy();
-        (_player as Player).destroy();
-        this.players = this.players.filter((p) => p.active);
-        this.checkGameOver();
+        (_player as Player).dieWithHitStop(() => this.onPlayerDead());
       },
       undefined,
       this
@@ -241,7 +242,8 @@ export class Game extends Phaser.Scene {
   }
 
   private checkGameOver(): void {
-    if (this.players.length === 0) {
+    const alivePlayers = this.players.filter((p) => p.active || p.getIsDying());
+    if (alivePlayers.length === 0) {
       this.scene.start(SCENE_KEYS.GAMEOVER, { score: this.score });
     }
   }
