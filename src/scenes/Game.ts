@@ -3,6 +3,8 @@ import { Player } from '../objects/Player';
 import { Shark } from '../objects/Shark';
 import { Chainsaw } from '../objects/Chainsaw';
 import { CooltimeGauge } from '../ui/CooltimeGauge';
+import { ScoreDisplay } from '../ui/ScoreDisplay';
+import { SCORE } from '../constants';
 import {
   ASSET_KEYS,
   CHAINSAW,
@@ -44,6 +46,9 @@ export class Game extends Phaser.Scene {
   private fireKey!: Phaser.Input.Keyboard.Key;
   private lastFiredTime: number = 0;
   private scrollSpeed: number = SCROLL.INITIAL_SPEED;
+  private score: number = 0;
+  private scoreDisplay!: ScoreDisplay;
+  private lastScoreTime: number = 0;
 
   constructor() {
     super({ key: SCENE_KEYS.GAME });
@@ -69,6 +74,8 @@ export class Game extends Phaser.Scene {
     this.lastFiredTime = 0;
     this.players = [];
     this.nextPlatformX = GAME_WIDTH + 200;
+    this.score = 0;
+    this.lastScoreTime = 0;
 
     this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, ASSET_KEYS.BackGround);
 
@@ -81,6 +88,7 @@ export class Game extends Phaser.Scene {
     this.platforms = this.physics.add.staticGroup();
     this.nextPlatformX = GAME_WIDTH + 200;
     this.sharks = this.physics.add.group();
+    this.scoreDisplay = new ScoreDisplay(this);
 
     this.time.addEvent({
       delay: SHARK.SPAWN_INTERVAL,
@@ -106,6 +114,7 @@ export class Game extends Phaser.Scene {
       (chainsaw, shark) => {
         (chainsaw as Chainsaw).destroy();
         (shark as Shark).destroy();
+        this.score += SCORE.SHARK_VONUS;
         this.spawnPlayer();
       },
       undefined,
@@ -160,6 +169,13 @@ export class Game extends Phaser.Scene {
         s.destroy();
       }
     });
+
+    if (time - this.lastFiredTime >= SCORE.INTERNAL) {
+      this.score += this.players.length * this.scrollSpeed;
+      this.lastScoreTime = time;
+    }
+
+    this.scoreDisplay.update(this.score);
   }
 
   private spawnPlayer(): void {
@@ -226,7 +242,7 @@ export class Game extends Phaser.Scene {
 
   private checkGameOver(): void {
     if (this.players.length === 0) {
-      this.scene.start(SCENE_KEYS.GAMEOVER);
+      this.scene.start(SCENE_KEYS.GAMEOVER, { score: this.score });
     }
   }
 

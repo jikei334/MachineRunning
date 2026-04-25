@@ -1,6 +1,11 @@
 export const GAME_WIDTH = 800;
 export const GAME_HEIGHT = 600;
 
+export const SCORE = {
+  SHARK_VONUS: 100,
+  INTERNAL: 1000,
+} as const;
+
 export const SCROLL = {
   INITIAL_SPEED: 3,
   MAX_SPEED: 12,
