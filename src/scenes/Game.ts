@@ -113,9 +113,10 @@ export class Game extends Phaser.Scene {
       this.sharks,
       (chainsaw, shark) => {
         (chainsaw as Chainsaw).destroy();
-        (shark as Shark).destroy();
-        this.score += SCORE.SHARK_VONUS;
-        this.spawnPlayer();
+        (shark as Shark).dieWithHitStop(() => {
+          this.score += SCORE.SHARK_VONUS;
+          this.spawnPlayer();
+        });
       },
       undefined,
       this
