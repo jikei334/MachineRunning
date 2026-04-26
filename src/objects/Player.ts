@@ -25,22 +25,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setScale(PLAYER.SCALE);
     this.setGravityY(GRAVITY);
 
-    scene.anims.create({
-      key: ANIM_KEYS.RUN,
-      frames: scene.anims.generateFrameNumbers(ASSET_KEYS.PLAYER, {
-        start: 0,
-        end: PLAYER.FRAME.COUNT - 1,
-      }),
-      frameRate: PLAYER.ANIM_FRAME_RATE,
-      repeat: -1,
-    });
+    if (!scene.anims.exists(ANIM_KEYS.RUN)) {
+      scene.anims.create({
+        key: ANIM_KEYS.RUN,
+        frames: scene.anims.generateFrameNumbers(ASSET_KEYS.PLAYER, {
+          start: 0,
+          end: PLAYER.FRAME.COUNT - 1,
+        }),
+        frameRate: PLAYER.ANIM_FRAME_RATE,
+        repeat: -1,
+      });
+    }
 
-    scene.anims.create({
-      key: ANIM_KEYS.JUMP,
-      frames: PLAYER.JUMP.FRAMES.map((frame) => ({ key: ASSET_KEYS.PLAYER, frame })),
-      frameRate: PLAYER.ANIM_FRAME_RATE,
-      repeat: 0,
-    });
+    if (!scene.anims.exists(ANIM_KEYS.JUMP)) {
+      scene.anims.create({
+        key: ANIM_KEYS.JUMP,
+        frames: PLAYER.JUMP.FRAMES.map((frame) => ({ key: ASSET_KEYS.PLAYER, frame })),
+          frameRate: PLAYER.ANIM_FRAME_RATE,
+        repeat: 0,
+      });
+    }
 
     this.anims.play(ANIM_KEYS.RUN);
   }
