@@ -24,6 +24,7 @@ export const ASSET_KEYS = {
   PLAYER: 'Player',
   SHARK: 'shark',
   CHAINSAW: 'chainsaw',
+  TITLE: 'Title',
 } as const;
 
 export const GROUND_SCALE = 0.5;

@@ -1,17 +1,14 @@
 import Phaser from 'phaser';
 import {
   COOLTIME,
-  CHAINSAW,
 } from '../constants';
 
 export class CooltimeGauge {
-  private bg: Phaser.GameObjects.Rectangle;
   private fill: Phaser.GameObjects.Rectangle;
-  private label: Phaser.GameObjects.Text;
 
   constructor(scene: Phaser.Scene) {
     // 背景
-    this.bg = scene.add.rectangle(
+    scene.add.rectangle(
       COOLTIME.GAUGE.X,
       COOLTIME.GAUGE.Y,
       COOLTIME.GAUGE.WIDTH,
@@ -29,7 +26,7 @@ export class CooltimeGauge {
     ).setOrigin(0, 0);
 
     // ラベル
-    this.label = scene.add.text(
+    scene.add.text(
       COOLTIME.GAUGE.X,
       COOLTIME.GAUGE.Y + COOLTIME.GAUGE.HEIGHT + 4,
       'CHAINSAW',
