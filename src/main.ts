@@ -10,11 +10,9 @@ const config: Phaser.Types.Core.GameConfig = {
   height: GAME_HEIGHT,
   physics: {
     default: 'arcade',
-    arcade: {
-      debug: true,
-    },
   },
   scene: [Title, Game, GameOver],
+  parent: 'game-container',
 };
 
 new Phaser.Game(config);
